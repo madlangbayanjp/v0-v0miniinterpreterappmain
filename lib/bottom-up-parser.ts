@@ -27,48 +27,32 @@ export class BottomUpParser {
   private stepCounter = 0
 
   private rules: GrammarRule[] = [
-    // F -> NUMBER (highest precedence - base case)
+    // E -> E + T (lowest precedence)
     {
-      lhs: "F",
-      rhs: ["NUMBER"],
-      action: (children) => {
-        const token = children[0] as Token
-        return {
-          type: "Number",
-          value: Number.parseFloat(token.value),
-        }
-      },
-    },
-    // F -> ( E )
-    {
-      lhs: "F",
-      rhs: ["(", "E", ")"],
-      action: (children) => children[1] as ASTNode,
-    },
-    // F -> + F (unary plus)
-    {
-      lhs: "F",
-      rhs: ["+", "F"],
+      lhs: "E",
+      rhs: ["E", "+", "T"],
       action: (children) => ({
-        type: "UnaryOp",
+        type: "BinaryOp",
+        left: children[0] as ASTNode,
         value: "+",
-        operand: children[1] as ASTNode,
+        right: children[2] as ASTNode,
       }),
     },
-    // F -> - F (unary minus)
+    // E -> E - T
     {
-      lhs: "F",
-      rhs: ["-", "F"],
+      lhs: "E",
+      rhs: ["E", "-", "T"],
       action: (children) => ({
-        type: "UnaryOp",
+        type: "BinaryOp",
+        left: children[0] as ASTNode,
         value: "-",
-        operand: children[1] as ASTNode,
+        right: children[2] as ASTNode,
       }),
     },
-    // T -> F
+    // E -> T
     {
-      lhs: "T",
-      rhs: ["F"],
+      lhs: "E",
+      rhs: ["T"],
       action: (children) => children[0] as ASTNode,
     },
     // T -> T * F (higher precedence)
@@ -93,33 +77,49 @@ export class BottomUpParser {
         right: children[2] as ASTNode,
       }),
     },
-    // E -> T
+    // T -> F
     {
-      lhs: "E",
-      rhs: ["T"],
+      lhs: "T",
+      rhs: ["F"],
       action: (children) => children[0] as ASTNode,
     },
-    // E -> E + T (lowest precedence)
+    // F -> + F (unary plus)
     {
-      lhs: "E",
-      rhs: ["E", "+", "T"],
+      lhs: "F",
+      rhs: ["+", "F"],
       action: (children) => ({
-        type: "BinaryOp",
-        left: children[0] as ASTNode,
+        type: "UnaryOp",
         value: "+",
-        right: children[2] as ASTNode,
+        operand: children[1] as ASTNode,
       }),
     },
-    // E -> E - T
+    // F -> - F (unary minus)
     {
-      lhs: "E",
-      rhs: ["E", "-", "T"],
+      lhs: "F",
+      rhs: ["-", "F"],
       action: (children) => ({
-        type: "BinaryOp",
-        left: children[0] as ASTNode,
+        type: "UnaryOp",
         value: "-",
-        right: children[2] as ASTNode,
+        operand: children[1] as ASTNode,
       }),
+    },
+    // F -> ( E )
+    {
+      lhs: "F",
+      rhs: ["(", "E", ")"],
+      action: (children) => children[1] as ASTNode,
+    },
+    // F -> NUMBER (highest precedence)
+    {
+      lhs: "F",
+      rhs: ["NUMBER"],
+      action: (children) => {
+        const token = children[0] as Token
+        return {
+          type: "Number",
+          value: Number.parseFloat(token.value),
+        }
+      },
     },
   ]
 
