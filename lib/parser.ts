@@ -1,8 +1,8 @@
-import type { Token } from "./tokenizer"
+import type { Token, ASTNode } from "./tokenizer"
 import { InterpreterError } from "./errors"
-import type { ASTNode } from "./tokenizer"
 import { parseExpressionBottomUp } from "./bottom-up-parser"
 
+export type { ASTNode } from "./tokenizer"
 export type ParsingStrategy = "top-down" | "bottom-up"
 
 export interface ParseStep {
@@ -21,20 +21,20 @@ export interface ParseResult {
 }
 
 export class Parser {
-  private tokens: Token[]
+  protected tokens: Token[]
   private currentTokenIndex = 0
-  private currentToken: Token
+  protected currentToken: Token
 
   constructor(tokens: Token[]) {
     this.tokens = tokens
     this.currentToken = this.tokens[0]
   }
 
-  private error(message: string): never {
+  protected error(message: string): never {
     throw new InterpreterError(message, this.currentToken.position, "PARSER")
   }
 
-  private eat(tokenType: Token["type"]): void {
+  protected eat(tokenType: Token["type"]): void {
     if (this.currentToken.type === tokenType) {
       this.currentTokenIndex++
       if (this.currentTokenIndex < this.tokens.length) {

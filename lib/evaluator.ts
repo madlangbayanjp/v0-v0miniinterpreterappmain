@@ -1,4 +1,4 @@
-import type { ASTNode } from "./parser"
+import type { ASTNode } from "./tokenizer"
 import { InterpreterError } from "./errors"
 
 export class Evaluator {
@@ -63,8 +63,10 @@ export class Evaluator {
             throw new InterpreterError(`Unknown binary operator: ${node.value}`, 0, "EVALUATOR")
         }
 
-      default:
-        throw new InterpreterError(`Unknown node type: ${node.type}`, 0, "EVALUATOR")
+      default: {
+        const _exhaustive: never = node
+        throw new InterpreterError(`Unknown node type`, 0, "EVALUATOR")
+      }
     }
   }
 }
@@ -153,7 +155,9 @@ export function evaluateWithSteps(node: ASTNode, depth = 0): { result: number; s
       steps.push(`${indent}Result: ${leftEval.result} ${node.value} ${rightEval.result} = ${binaryResult}`)
       return { result: binaryResult, steps }
 
-    default:
-      throw new InterpreterError(`Unknown node type: ${node.type}`, 0, "EVALUATOR")
+    default: {
+      const _exhaustive: never = node
+      throw new InterpreterError(`Unknown node type`, 0, "EVALUATOR")
+    }
   }
 }

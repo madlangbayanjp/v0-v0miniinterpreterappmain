@@ -6,6 +6,23 @@ export interface Token {
   position: number
 }
 
+export type ASTNode =
+  | {
+      type: "Number"
+      value: number
+    }
+  | {
+      type: "UnaryOp"
+      value: string
+      operand: ASTNode
+    }
+  | {
+      type: "BinaryOp"
+      value: string
+      left: ASTNode
+      right: ASTNode
+    }
+
 export class Tokenizer {
   private input: string
   private position = 0

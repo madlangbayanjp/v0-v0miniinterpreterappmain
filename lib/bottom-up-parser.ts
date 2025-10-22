@@ -187,20 +187,20 @@ export class BottomUpParser {
   }
 
   private canReduceWithLookahead(lhs: string, lookahead: string): boolean {
-    // Can always reduce if we're at end of input
+    // Can always reduce to any non-terminal if we're at end of input
     if (lookahead === "$") return true
 
     // Reduce rules for non-terminals based on lookahead
     if (lhs === "E") {
-      // E can be reduced when followed by +, -, ), or $
+      // Can reduce to E when followed by +, -, ), or $
       return ["+", "-", ")", "$"].includes(lookahead)
     }
     if (lhs === "T") {
-      // T can be reduced when followed by +, -, *, /, ), or $
+      // Can reduce to T when followed by +, -, *, /, ), or $
       return ["+", "-", "*", "/", ")", "$"].includes(lookahead)
     }
     if (lhs === "F") {
-      // F can be reduced when followed by +, -, *, /, ), or $
+      // Can reduce to F when followed by +, -, *, /, ), or $
       return ["+", "-", "*", "/", ")", "$"].includes(lookahead)
     }
 
@@ -271,7 +271,8 @@ export class BottomUpParser {
       iterations++
       const currentToken = this.getCurrentToken()
 
-      if (this.stackTypes.length === 1 && currentToken.type === "EOF" && this.stackTypes[0] === "E") {
+      // Check for acceptance condition first
+      if (this.stackTypes.length === 1 && this.stackTypes[0] === "E" && currentToken.type === "EOF") {
         this.steps.push({
           step: ++this.stepCounter,
           action: "accept",
@@ -288,11 +289,16 @@ export class BottomUpParser {
       if (reduction) {
         this.reduce(reduction.rule, reduction.ruleIndex)
       } else if (currentToken.type !== "EOF") {
-        // Shift
+        // Shift if not at end of input
         this.shift()
       } else {
-        // Error - can't reduce and at end of input
-        throw new InterpreterError("Syntax error: unexpected end of expression", currentToken.position, "PARSER")
+        // Error - can't reduce and at end of input, but not in accept state
+        const stackContents = this.stackTypes.join(" ")
+        throw new InterpreterError(
+          `Syntax error: unexpected end of expression. Stack: [${stackContents}]`,
+          currentToken.position,
+          "PARSER",
+        )
       }
     }
 
